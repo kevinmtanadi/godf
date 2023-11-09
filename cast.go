@@ -18,6 +18,10 @@ func AutoCast(data interface{}) any {
 		switch sliceType.Kind() {
 		case reflect.Float64:
 			return CastArrayFloat64(data)
+		case reflect.Int:
+			return CastArrayInt(data)
+		case reflect.String:
+			return CastArrayString(data)
 		default:
 			panic(fmt.Sprintf("Datatype %s not supported yet", sliceType.Kind()))
 		}
@@ -48,4 +52,13 @@ func CastArrayString(data interface{}) []string {
 
 func CastArrayInt(data interface{}) []int {
 	return reflect.ValueOf(data).Interface().([]int)
+}
+
+func CastHeaders(headers []string) []interface{} {
+	var intfHeaders []interface{}
+	for _, s := range headers {
+		intfHeaders = append(intfHeaders, interface{}(s))
+	}
+
+	return intfHeaders
 }

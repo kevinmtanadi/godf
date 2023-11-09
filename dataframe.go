@@ -1,12 +1,13 @@
 package main
 
 import (
+	"encoding/csv"
 	"fmt"
 	"os"
 	"reflect"
 	"strconv"
-	"strings"
-	"text/tabwriter"
+
+	"github.com/jedib0t/go-pretty/v6/table"
 )
 
 type dataframe struct {
@@ -74,21 +75,67 @@ func (d *dataframe) Transpose() *dataframe {
 	return &df
 }
 
+func ReadCSV(filename string) *dataframe {
+	df := dataframe{}
+
+	file, err := os.Open(filename)
+	if err != nil {
+		panic(err)
+	}
+	defer file.Close()
+
+	reader := csv.NewReader(file)
+
+	line := 0
+	for {
+		data, err := reader.Read()
+		if err != nil {
+			break
+		}
+
+		if line == 0 {
+			df.headers = data
+		} else {
+			df.data = append(df.data, []interface{}{})
+			for _, s := range data {
+				castedData := AutoCast(s)
+				df.data[line-1] = append(df.data[line-1], castedData)
+			}
+		}
+		line++
+	}
+
+	df = *df.Transpose()
+	return &df
+}
+
+func (d *dataframe) WriteCSV(path string) {
+	file, err := os.Create(path)
+	if err != nil {
+		panic(err)
+	}
+	defer file.Close()
+}
+
 func (d *dataframe) Shape() (row int, col int) {
 	return len(d.data), len(d.data[0])
 }
 
 func (d *dataframe) Show() {
 	df := d.Transpose()
-	w := tabwriter.NewWriter(os.Stdout, 0, 8, 0, '\t', 0)
+
+	t := table.NewWriter()
+	t.SetStyle(table.StyleLight)
+	t.SetOutputMirror(os.Stdout)
+	indexedHeader := append([]interface{}{"#"}, CastHeaders(d.headers)...)
+	t.AppendHeader(table.Row(indexedHeader))
+
 	for idx, row := range df.data {
-		if idx == 0 && d.headers != nil {
-			fmt.Fprintf(w, "index\t%s\n", strings.Join(d.headers, "\t"))
-		}
-		line := fmt.Sprintf("%d\t%s", idx+1, strings.Join(stringify(row), "\t"))
-		fmt.Fprintln(w, line)
+		indexedRow := append([]interface{}{idx + 1}, row...)
+		t.AppendRow(table.Row(indexedRow))
 	}
-	w.Flush()
+
+	t.Render()
 }
 
 func (d *dataframe) GetCol(headers ...interface{}) *dataframe {
@@ -217,6 +264,8 @@ func stringify(data []interface{}) []string {
 			line[idx] = strconv.Itoa(i)
 		} else if f, ok := x.(float64); ok {
 			line[idx] = strconv.FormatFloat(f, 'f', -1, 64)
+		} else {
+			line[idx] = x.(string)
 		}
 	}
 
