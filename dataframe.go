@@ -14,6 +14,13 @@ type dataframe struct {
 	data    [][]interface{}
 }
 
+// DataFrame initializes and returns a dataframe
+//
+// This function takes a map[string]interface{} as a variable
+// where the string will be the header name and the interface{}
+// will be the contained data
+//
+//	Returns a pointer to the dataframe
 func DataFrame(data map[string]interface{}) *dataframe {
 	df := dataframe{}
 	headers := make([]string, 0)
@@ -51,6 +58,9 @@ func DataFrame(data map[string]interface{}) *dataframe {
 	return &df
 }
 
+// Transpose transpose the data not including the headers
+//
+//	Returns a pointer to the dataframe
 func (d *dataframe) Transpose() *dataframe {
 	if len(d.data) == 0 {
 		return nil
@@ -74,10 +84,14 @@ func (d *dataframe) Transpose() *dataframe {
 	return &df
 }
 
+// Shape returns the shape of the data in the dataframe
+//
+//	Returns row, col of the table
 func (d *dataframe) Shape() (row int, col int) {
 	return len(d.data), len(d.data[0])
 }
 
+// Show renders the dataframe
 func (d *dataframe) Show() {
 	df := d.Transpose()
 
@@ -95,9 +109,19 @@ func (d *dataframe) Show() {
 	t.Render()
 }
 
+// GetCol returns a new dataframe with selected columns
+//
+// Can receive single or multiple headers of type
+//   - string : headers name
+//   - int : headers position
+//
+// Using string is recommended
+//
+//	Example of usage:
+//	df.GetCol("first_name", "last_name")
 func (d *dataframe) GetCol(headers ...interface{}) *dataframe {
 	if len(headers) == 0 {
-		panic("GetCol requires at least one header")
+		panic("call of godf.GetCol requires at least one index")
 	}
 
 	var colNum []int
@@ -113,7 +137,7 @@ func (d *dataframe) GetCol(headers ...interface{}) *dataframe {
 				}
 			}
 		default:
-			panic("Unsupported header name datatype")
+			panic("unsupported header name datatype")
 		}
 	}
 
@@ -138,6 +162,16 @@ func (d *dataframe) GetCol(headers ...interface{}) *dataframe {
 	return &df
 }
 
+// DropCol drop the inputted columns directly from the current dataframe
+//
+// Can receive single or multiple headers of type
+//   - string : headers name
+//   - int : headers position
+//
+// Using string is recommended
+//
+//	Example of usage:
+//	df.DropCol("first_name", "last_name")
 func (d *dataframe) DropCol(headers ...interface{}) {
 	var colNum int
 
@@ -152,7 +186,7 @@ func (d *dataframe) DropCol(headers ...interface{}) {
 				}
 			}
 		default:
-			panic("Unsupported header name datatype")
+			panic("unsupported header name datatype")
 		}
 
 		newHeader := make([]string, len(d.headers)-1)
@@ -175,9 +209,14 @@ func (d *dataframe) DropCol(headers ...interface{}) {
 
 }
 
+// GetRow returns a new dataframe of inputted indexes
+// and can handle single and multiple rows
+//
+//	Example of usage:
+//	df.GetRow(1, 2, 3, 4, 5)
 func (d *dataframe) GetRow(idx ...int) *dataframe {
 	if len(idx) == 0 {
-		panic("GetRow requires at least one index")
+		panic("call of godf.GetRow requires at least one index")
 	}
 
 	df := dataframe{}
@@ -197,9 +236,14 @@ func (d *dataframe) GetRow(idx ...int) *dataframe {
 	return &df
 }
 
+// DropRow drops the inputted indexes directly from the current dataframe.
+// Can handle single and multiple rows
+//
+//	Example of usage:
+//	df.DropRow(1, 2, 3, 4, 5)
 func (d *dataframe) DropRow(idx ...int) {
 	if len(idx) == 0 {
-		panic("DropRow requires at least one index")
+		panic("call of godf.DropRow requires at least one index")
 	}
 
 	_, col := d.Shape()
@@ -209,6 +253,7 @@ func (d *dataframe) DropRow(idx ...int) {
 	d.data = df.data
 }
 
+// ExtractData returns the raw data as [][]interface{}
 func (d *dataframe) ExtractData() [][]interface{} {
 	return d.data
 }
@@ -229,6 +274,8 @@ func stringify(data []interface{}) []string {
 	return line
 }
 
+// revertSlice returns an array of numbers from 1 to n
+// without the numbers in the slice
 func revertSlice(n int, slice []int) []int {
 	excluded := make(map[int]struct{})
 	for _, num := range slice {
@@ -247,6 +294,15 @@ func revertSlice(n int, slice []int) []int {
 	return sequence
 }
 
+// Append appends new data to the current dataframe
+//
+//	Can receive single or multiple data
+//	Single data would be in form of 1D slice
+//	Multiple data would be in form of 2D slice
+//
+//	Example of usage:
+//	df.Append([]int{1, 2, 3})
+//	df.Append([][]int{{1, 2}, {3, 4}, {5, 6}})
 func (d *dataframe) Append(data interface{}) {
 
 	val := reflect.ValueOf(data)
@@ -259,7 +315,7 @@ func (d *dataframe) Append(data interface{}) {
 			for i := 0; i < length; i++ {
 				inputColNum := reflect.ValueOf(val.Index(i).Interface()).Len()
 				if inputColNum != colNum {
-					panic(fmt.Sprintf("Number of columns on input data row %d does not match with existing data: {%d, %d}", i+1, inputColNum, colNum))
+					panic(fmt.Sprintf("number of columns on input data row %d does not match with existing data: {%d, %d}", i+1, inputColNum, colNum))
 				}
 				for j := 0; j < colNum; j++ {
 					data := val.Index(i).Index(j).Interface()
@@ -269,7 +325,7 @@ func (d *dataframe) Append(data interface{}) {
 		} else {
 			// only a single data inputted
 			if length != len(d.data) {
-				panic(fmt.Sprintf("Number of columns on input data does not match with existing data: {%d, %d}", length, colNum))
+				panic(fmt.Sprintf("number of columns on input data does not match with existing data: {%d, %d}", length, colNum))
 			}
 
 			for i := 0; i < length; i++ {
@@ -281,16 +337,4 @@ func (d *dataframe) Append(data interface{}) {
 	} else {
 		panic("given empty slice")
 	}
-
-	// if length != len(d.data) {
-	// 	panic(fmt.Sprintf("New data must have the same number of columns as the existing data: %d, %d", length, len(d.data[0])))
-	// }
-
-	// for i := 0; i < length; i++ {
-	// 	if i < val.Len() {
-	// 		val2 := reflect.ValueOf(val)
-	// 		fmt.Println(val2)
-	// 		// d.data[i] = append(d.data[i], val.Index(i).Interface())
-	// 	}
-	// }
 }
