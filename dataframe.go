@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/csv"
 	"fmt"
 	"os"
 	"reflect"
@@ -73,67 +72,6 @@ func (d *dataframe) Transpose() *dataframe {
 	df.data = transposed
 
 	return &df
-}
-
-func ReadCSV(filename string) *dataframe {
-	df := dataframe{}
-
-	file, err := os.Open(filename)
-	if err != nil {
-		panic(err)
-	}
-	defer file.Close()
-
-	reader := csv.NewReader(file)
-
-	line := 0
-	for {
-		data, err := reader.Read()
-		if err != nil {
-			break
-		}
-
-		if line == 0 {
-			df.headers = data
-		} else {
-			df.data = append(df.data, []interface{}{})
-			for _, s := range data {
-				castedData := AutoCast(s)
-				df.data[line-1] = append(df.data[line-1], castedData)
-			}
-		}
-		line++
-	}
-
-	df = *df.Transpose()
-	return &df
-}
-
-func (d *dataframe) WriteCSV(path string) {
-	file, err := os.Create(path)
-	if err != nil {
-		panic(err)
-	}
-	defer file.Close()
-
-	writer := csv.NewWriter(file)
-	defer writer.Flush()
-
-	df := d.Transpose()
-
-	err = writer.Write(df.headers)
-	if err != nil {
-		panic(err)
-	}
-
-	for _, row := range df.data {
-		err := writer.Write(stringify(row))
-		if err != nil {
-			panic(err)
-		}
-	}
-
-	fmt.Println("Generated CSV file: ", path)
 }
 
 func (d *dataframe) Shape() (row int, col int) {
@@ -307,4 +245,52 @@ func revertSlice(n int, slice []int) []int {
 	}
 
 	return sequence
+}
+
+func (d *dataframe) Append(data interface{}) {
+
+	val := reflect.ValueOf(data)
+	length := val.Len()
+	colNum := len(d.data)
+
+	if val.Len() > 0 {
+		if reflect.ValueOf(val.Index(0).Interface()).Kind() == reflect.Slice {
+			// multiple data inputted
+			for i := 0; i < length; i++ {
+				inputColNum := reflect.ValueOf(val.Index(i).Interface()).Len()
+				if inputColNum != colNum {
+					panic(fmt.Sprintf("Number of columns on input data row %d does not match with existing data: {%d, %d}", i+1, inputColNum, colNum))
+				}
+				for j := 0; j < colNum; j++ {
+					data := val.Index(i).Index(j).Interface()
+					d.data[j] = append(d.data[j], data)
+				}
+			}
+		} else {
+			// only a single data inputted
+			if length != len(d.data) {
+				panic(fmt.Sprintf("Number of columns on input data does not match with existing data: {%d, %d}", length, colNum))
+			}
+
+			for i := 0; i < length; i++ {
+				if i < val.Len() {
+					d.data[i] = append(d.data[i], val.Index(i).Interface())
+				}
+			}
+		}
+	} else {
+		panic("given empty slice")
+	}
+
+	// if length != len(d.data) {
+	// 	panic(fmt.Sprintf("New data must have the same number of columns as the existing data: %d, %d", length, len(d.data[0])))
+	// }
+
+	// for i := 0; i < length; i++ {
+	// 	if i < val.Len() {
+	// 		val2 := reflect.ValueOf(val)
+	// 		fmt.Println(val2)
+	// 		// d.data[i] = append(d.data[i], val.Index(i).Interface())
+	// 	}
+	// }
 }
