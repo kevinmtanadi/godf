@@ -13,6 +13,8 @@ func main() {
 
 	df.Show()
 
+	df.WriteCSV("output.csv")
+
 	// df.Show()
 }
 

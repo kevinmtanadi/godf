@@ -115,6 +115,25 @@ func (d *dataframe) WriteCSV(path string) {
 		panic(err)
 	}
 	defer file.Close()
+
+	writer := csv.NewWriter(file)
+	defer writer.Flush()
+
+	df := d.Transpose()
+
+	err = writer.Write(df.headers)
+	if err != nil {
+		panic(err)
+	}
+
+	for _, row := range df.data {
+		err := writer.Write(stringify(row))
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	fmt.Println("Generated CSV file: ", path)
 }
 
 func (d *dataframe) Shape() (row int, col int) {
