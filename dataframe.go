@@ -1,4 +1,4 @@
-package godf
+package main
 
 import (
 	"fmt"
@@ -118,14 +118,12 @@ func (d *dataframe) Show() {
 // GetCol returns a new dataframe with selected columns
 //
 // Can receive single or multiple headers of type
+//
 //   - string : headers name
-//   - int : headers position
 //
-// Using string is recommended
-//
-//	Example of usage:
-//	df.GetCol("first_name", "last_name")
-func (d *dataframe) GetCol(headers ...interface{}) *dataframe {
+//     Example of usage:
+//     df.GetCol("first_name", "last_name")
+func (d *dataframe) GetCol(headers ...string) *dataframe {
 	if len(headers) == 0 {
 		panic("call of godf.GetCol requires at least one index")
 	}
@@ -133,17 +131,10 @@ func (d *dataframe) GetCol(headers ...interface{}) *dataframe {
 	var colNum []int
 
 	for _, h := range headers {
-		switch v := h.(type) {
-		case int:
-			colNum = append(colNum, v)
-		case string:
-			for i, header := range d.headers {
-				if header == v {
-					colNum = append(colNum, i)
-				}
+		for i, header := range d.headers {
+			if header == h {
+				colNum = append(colNum, i)
 			}
-		default:
-			panic("unsupported header name datatype")
 		}
 	}
 

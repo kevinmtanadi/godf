@@ -1,4 +1,4 @@
-package godf
+package main
 
 import (
 	"fmt"
@@ -255,6 +255,16 @@ func inArray(value interface{}, array interface{}) bool {
 		}
 
 		if reflect.DeepEqual(value, fData) {
+			return true
+		}
+	}
+
+	return false
+}
+
+func inArrayString(needle string, haystack []string) bool {
+	for _, h := range haystack {
+		if needle == h {
 			return true
 		}
 	}
