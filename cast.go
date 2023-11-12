@@ -62,3 +62,7 @@ func CastHeaders(headers []string) []interface{} {
 
 	return intfHeaders
 }
+
+func GetDatatype(data interface{}) reflect.Kind {
+	return reflect.TypeOf(data).Kind()
+}

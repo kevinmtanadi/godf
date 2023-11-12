@@ -93,6 +93,10 @@ func (d *dataframe) Shape() (row int, col int) {
 
 // Show renders the dataframe
 func (d *dataframe) Show() {
+	if d.data == nil {
+		fmt.Println("dataframe is empty")
+		return
+	}
 	df := d.Transpose()
 
 	t := table.NewWriter()
@@ -101,9 +105,11 @@ func (d *dataframe) Show() {
 	indexedHeader := append([]interface{}{"#"}, CastHeaders(d.headers)...)
 	t.AppendHeader(table.Row(indexedHeader))
 
-	for idx, row := range df.data {
-		indexedRow := append([]interface{}{idx + 1}, row...)
-		t.AppendRow(table.Row(indexedRow))
+	if df.data != nil {
+		for idx, row := range df.data {
+			indexedRow := append([]interface{}{idx + 1}, row...)
+			t.AppendRow(table.Row(indexedRow))
+		}
 	}
 
 	t.Render()
@@ -223,7 +229,6 @@ func (d *dataframe) GetRow(idx ...int) *dataframe {
 	df.headers = d.headers
 
 	// result := [][]interface{}{}
-	fmt.Println(idx)
 	row, _ := d.Shape()
 	for i := 0; i < row; i++ {
 		data := []interface{}{}
@@ -337,4 +342,78 @@ func (d *dataframe) Append(data interface{}) {
 	} else {
 		panic("given empty slice")
 	}
+}
+
+// Merge will merge 2 dataframes vertically, appending the data
+//
+//	Example of usage:
+//	mergedDf := df1.Merge(df2)
+func (d1 *dataframe) Merge(d2 *dataframe) *dataframe {
+	df := dataframe{}
+
+	if len(d1.headers) != len(d2.headers) {
+		panic(fmt.Sprintf("data length do not match {%d | %d}", len(d1.headers), len(d2.headers)))
+	}
+
+	for i := range d1.headers {
+		if d1.headers[i] != d2.headers[i] {
+			panic(fmt.Sprintf("headers do not match {%s | %s}", d1.headers[i], d2.headers[i]))
+		}
+	}
+
+	for i, data := range d2.data {
+		d1.data[i] = append(d1.data[i], data...)
+	}
+
+	df.headers = d1.headers
+	df.data = d1.data
+
+	return &df
+}
+
+// Join joins 2 dataframes horizontally
+//
+//	Example of usage:
+//	joinedDf := df1.Join(df2)
+func (d1 *dataframe) Join(d2 *dataframe) *dataframe {
+	df := dataframe{}
+
+	d1Row, _ := d1.Shape()
+	d2Row, _ := d2.Shape()
+
+	if d1Row != d2Row {
+		panic(fmt.Sprintf("data length do not match {%d | %d}", d1Row, d2Row))
+	}
+
+	df.headers = d1.headers
+	df.headers = append(df.headers, d2.headers...)
+
+	df.data = d1.data
+	df.data = append(df.data, d2.data...)
+
+	return &df
+}
+
+// Limit returns a new dataframe with the first n rows
+//
+//	Example of usage:
+//	limitedDf := df.Limit(5)
+func (d *dataframe) Limit(n int) *dataframe {
+	df := dataframe{}
+
+	df.headers = d.headers
+	df.data = make([][]interface{}, len(d.data))
+
+	for i := range d.data {
+		if i == n {
+			break
+		}
+
+		row := d.GetRow(i + 1).ExtractData()
+		for j, d := range row {
+			df.data[j] = append(df.data[j], d[0])
+		}
+	}
+
+	return &df
 }
