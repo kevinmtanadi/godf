@@ -45,3 +45,27 @@ func isURL(str string) bool {
 	u, err := url.Parse(str)
 	return err == nil && u.Scheme != "" && u.Host != ""
 }
+
+func convert1DFloat(x []interface{}) []float64 {
+	floatArr := []float64{}
+	for _, i := range x {
+		switch v := i.(type) {
+		case float64:
+			floatArr = append(floatArr, v)
+		case int:
+			floatArr = append(floatArr, float64(v))
+		}
+	}
+
+	return floatArr
+}
+
+func convert2DIntf(x []float64) []interface{} {
+	intfArr := []interface{}{}
+
+	for _, i := range x {
+		intfArr = append(intfArr, i)
+	}
+
+	return intfArr
+}

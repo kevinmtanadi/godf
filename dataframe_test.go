@@ -8,9 +8,9 @@ import (
 func InitiateDummyDF() *dataframe {
 	df := DataFrame(map[string]interface{}{
 		"x": []float64{0.1, 0.2, 0.3, 0.4, 0.5},
-		"y": []float64{1.1, 1.2, 1.3, 1.4, 1.5},
+		"y": []float64{1.5, 1.4, 1.3, 1.2, 1.1},
 		"z": []float64{21, 22, 23, 24, 25},
-		"a": []float64{21, 22, 23, 24, 25},
+		"a": []float64{25, 24, 23, 22, 21},
 	})
 
 	return df
@@ -165,4 +165,10 @@ func TestExtractData(t *testing.T) {
 
 	arrData := df.ExtractData()
 	fmt.Println(arrData)
+}
+
+func TestCorr(t *testing.T) {
+	df := InitiateDummyDF()
+
+	df.Corr()
 }

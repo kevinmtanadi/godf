@@ -84,3 +84,46 @@ func max(x []float64) float64 {
 
 	return max
 }
+
+func sum(x []float64) float64 {
+	res := 0.
+	for _, v := range x {
+		res += v
+	}
+
+	return res
+}
+
+func dot(x, y []float64) float64 {
+	result := 0.0
+	for i := 0; i < len(x); i++ {
+		result += x[i] * y[i]
+	}
+
+	return result
+}
+
+func arrayMultiplication(x, y []float64) []float64 {
+	if len(x) != len(y) {
+		panic("ArrayMultiplication: len(x) != len(y)")
+	}
+
+	result := make([]float64, len(x))
+
+	for i := 0; i < len(x); i++ {
+		result[i] = x[i] * y[i]
+	}
+
+	return result
+}
+
+func correlation(x, y []float64) float64 {
+	n := float64(len(x))
+
+	pembilang := (n*dot(x, y) - (sum(x) * sum(y)))
+	pembagi1 := n*sum(arrayMultiplication(x, x)) - math.Pow(sum(x), 2)
+	pembagi2 := n*sum(arrayMultiplication(y, y)) - math.Pow(sum(y), 2)
+
+	corr := pembilang / math.Sqrt(pembagi1*pembagi2)
+	return corr
+}

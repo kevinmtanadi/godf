@@ -10,6 +10,7 @@ import (
 	"unsafe"
 
 	"github.com/jedib0t/go-pretty/v6/table"
+	"github.com/jedib0t/go-pretty/v6/text"
 )
 
 type dataframe struct {
@@ -20,6 +21,7 @@ type dataframe struct {
 
 type DataframeOption struct {
 	StringLimit int
+	isCorr      bool
 }
 
 // DataFrame initializes and returns a dataframe
@@ -124,13 +126,30 @@ func (d *dataframe) Show() {
 	}
 
 	t := table.NewWriter()
-	t.SetStyle(table.StyleLight)
+	t.SetStyle(table.Style{
+		Name:  "StyleLight",
+		Box:   table.StyleBoxLight,
+		Color: table.ColorOptionsDefault,
+		Format: table.FormatOptions{
+			Footer: text.FormatDefault,
+			Header: text.FormatDefault,
+			Row:    text.FormatDefault,
+		},
+		HTML:    table.DefaultHTMLOptions,
+		Options: table.OptionsDefault,
+		Title:   table.TitleOptionsDefault,
+	})
 	t.SetOutputMirror(os.Stdout)
 	indexedHeader := append([]interface{}{"#"}, CastHeaders(d.headers)...)
 	t.AppendHeader(table.Row(indexedHeader))
 
 	if df.data != nil {
 		for idx, row := range df.data {
+			if d.option.isCorr {
+				row = append([]interface{}{d.headers[idx]}, row...)
+				t.AppendRow(table.Row(row))
+				continue
+			}
 			toBePrinted := row
 			for i, r := range toBePrinted {
 				if reflect.TypeOf(r).Kind() == reflect.String {
@@ -529,3 +548,49 @@ func (d *dataframe) SetOption(option DataframeOption) {
 	}
 	d.option = option
 }
+
+func (d *dataframe) Corr() {
+	length := len(d.data)
+
+	corrDf := dataframe{}
+	corrDf.headers = d.headers
+	for i := 0; i < length; i++ {
+		corrLine := make([]float64, length)
+		for j := 0; j < length; j++ {
+			corrLine[j] = correlation(
+				convert1DFloat(d.GetCol(d.headers[i]).ExtractData().([]interface{})),
+				convert1DFloat(d.GetCol(d.headers[j]).ExtractData().([]interface{})),
+			)
+		}
+		corrDf.data = append(corrDf.data, convert2DIntf(corrLine))
+	}
+
+	corrDf.option = DataframeOption{
+		isCorr: true,
+	}
+	corrDf.Show()
+}
+
+/*
+func (d *DataFrame) Correlation() DataFrame {
+	corrTable := [][]float64{}
+
+	length := len(d.Data[0])
+
+	for i := 0; i < length; i++ {
+		corrLine := make([]float64, length)
+		for j := 0; j < length; j++ {
+			corrLine[j] = formula.Correlation(d.GetCol(i).GetFloatData()[0], d.GetCol(j).GetFloatData()[0])
+		}
+		corrTable = append(corrTable, corrLine)
+	}
+
+	corrDf := DataFrame{}
+	corrDf.InsertFloat(corrTable)
+	corrDf.setHeader(d.Header)
+	corrDf.Show(true)
+
+	return corrDf
+}
+
+*/
