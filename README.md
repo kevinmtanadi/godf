@@ -2,8 +2,7 @@
 
 [![Go Reference](https://pkg.go.dev/badge/github.com/kevinmtanadi/godf?utm_source=godoc)](https://pkg.go.dev/github.com/kevinmtanadi/godf)
 
-A simple dataframe handler for golang, inspired by pandas from python. I used [@jedib0t](https://github.com/jedib0t)'s go-pretty to render the table.
-Here's the library : [go-pretty](https://github.com/jedib0t/go-pretty/tree/main).
+A simple dataframe handler for golang, inspired by pandas from python. I used [@jedib0t](https://github.com/jedib0t)'s [go-pretty](https://github.com/jedib0t/go-pretty/tree/main) to render the table.
 
 It can handle simple data manipulation such as :
 - One hot encoding
