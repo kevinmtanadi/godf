@@ -441,20 +441,21 @@ func (d1 *dataframe) Merge(d2 *dataframe) *dataframe {
 		panic(fmt.Sprintf("data length do not match {%d | %d}", len(d1.headers), len(d2.headers)))
 	}
 
-	for _, h1 := range d1.headers {
-		for _, h2 := range d2.headers {
+	for i, h1 := range d1.headers {
+		for j, h2 := range d2.headers {
 			if h1 == h2 {
-				for idx, data := range d2.data {
-					d1.data[idx] = append(d1.data[idx], data...)
-				}
+				// for idx, data := range d2.data {
+				// 	d1.data[idx] = append(d1.data[idx], data...)
+				// }
+				d1.data[i] = append(d1.data[i], d2.data[j]...)
 				break
 			}
 		}
 	}
 
-	for i, data := range d2.data {
-		d1.data[i] = append(d1.data[i], data...)
-	}
+	// for i, data := range d2.data {
+	// 	d1.data[i] = append(d1.data[i], data...)
+	// }
 
 	df.headers = d1.headers
 	df.data = d1.data
