@@ -28,7 +28,14 @@ func (filter Eq) applyFilter(d *dataframe) *dataframe {
 		for colIdx, dHeader := range d.headers {
 			if fHeader == dHeader {
 				for i, row := range d.data[colIdx] {
-					if row.(float64) == fValue.(float64) {
+					var data float64
+					switch v := row.(type) {
+					case float64:
+						data = v
+					case int:
+						data = float64(v)
+					}
+					if data == fValue.(float64) {
 						rowData := d.GetRow(i + 1)
 						for i, data := range rowData.data {
 							df.data[i] = append(df.data[i], data[0])
@@ -61,7 +68,14 @@ func (filter NotEq) applyFilter(d *dataframe) *dataframe {
 		for colIdx, dHeader := range d.headers {
 			if fHeader == dHeader {
 				for i, row := range d.data[colIdx] {
-					if row.(float64) != fValue.(float64) {
+					var data float64
+					switch v := row.(type) {
+					case float64:
+						data = v
+					case int:
+						data = float64(v)
+					}
+					if data != fValue.(float64) {
 						rowData := d.GetRow(i + 1)
 						for i, data := range rowData.data {
 							df.data[i] = append(df.data[i], data[0])
@@ -94,7 +108,14 @@ func (filter GT) applyFilter(d *dataframe) *dataframe {
 		for colIdx, dHeader := range d.headers {
 			if fHeader == dHeader {
 				for i, row := range d.data[colIdx] {
-					if row.(float64) > fValue.(float64) {
+					var data float64
+					switch v := row.(type) {
+					case float64:
+						data = v
+					case int:
+						data = float64(v)
+					}
+					if data > fValue.(float64) {
 						rowData := d.GetRow(i + 1)
 						for i, data := range rowData.data {
 							df.data[i] = append(df.data[i], data[0])
@@ -127,7 +148,14 @@ func (filter GTE) applyFilter(d *dataframe) *dataframe {
 		for colIdx, dHeader := range d.headers {
 			if fHeader == dHeader {
 				for i, row := range d.data[colIdx] {
-					if row.(float64) >= fValue.(float64) {
+					var data float64
+					switch v := row.(type) {
+					case float64:
+						data = v
+					case int:
+						data = float64(v)
+					}
+					if data >= fValue.(float64) {
 						rowData := d.GetRow(i + 1)
 						for i, data := range rowData.data {
 							df.data[i] = append(df.data[i], data[0])
@@ -160,7 +188,14 @@ func (filter LT) applyFilter(d *dataframe) *dataframe {
 		for colIdx, dHeader := range d.headers {
 			if fHeader == dHeader {
 				for i, row := range d.data[colIdx] {
-					if row.(float64) < fValue.(float64) {
+					var data float64
+					switch v := row.(type) {
+					case float64:
+						data = v
+					case int:
+						data = float64(v)
+					}
+					if data < fValue.(float64) {
 						rowData := d.GetRow(i + 1)
 						for i, data := range rowData.data {
 							df.data[i] = append(df.data[i], data[0])
@@ -193,7 +228,14 @@ func (filter LTE) applyFilter(d *dataframe) *dataframe {
 		for colIdx, dHeader := range d.headers {
 			if fHeader == dHeader {
 				for i, row := range d.data[colIdx] {
-					if row.(float64) <= fValue.(float64) {
+					var data float64
+					switch v := row.(type) {
+					case float64:
+						data = v
+					case int:
+						data = float64(v)
+					}
+					if data <= fValue.(float64) {
 						rowData := d.GetRow(i + 1)
 						for i, data := range rowData.data {
 							df.data[i] = append(df.data[i], data[0])

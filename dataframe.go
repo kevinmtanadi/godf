@@ -496,14 +496,7 @@ func (d *dataframe) Limit(n int) *dataframe {
 	df.data = make([][]interface{}, len(d.data))
 
 	for i := range d.data {
-		if i == n {
-			break
-		}
-
-		row := d.GetRow(i + 1).ExtractData().([][]interface{})
-		for j, d := range row {
-			df.data[j] = append(df.data[j], d[0])
-		}
+		df.data[i] = d.data[i][:n]
 	}
 
 	return &df

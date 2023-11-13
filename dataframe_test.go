@@ -7,10 +7,10 @@ import (
 
 func InitiateDummyDF() *dataframe {
 	df := DataFrame(map[string]interface{}{
-		"x": []float64{0.1, 0.2, 0.3, 0.4, 0.5},
-		"y": []float64{1.5, 1.4, 1.3, 1.2, 1.1},
-		"z": []float64{21, 22, 23, 24, 25},
-		"a": []float64{25, 24, 23, 22, 21},
+		"x": []float64{0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5},
+		"y": []float64{1.5, 1.4, 1.3, 1.2, 1.1, 1.0, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1},
+		"z": []int{21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35},
+		"a": []int{25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11},
 	})
 
 	return df
@@ -104,6 +104,14 @@ func TestGetCol(t *testing.T) {
 
 	col := df.GetCol("x", "y")
 	col.Show()
+
+}
+
+func TestFilterEq(t *testing.T) {
+	df := InitiateDummyDF()
+
+	filtered := df.Where(Eq{"z": 21})
+	filtered.Show()
 }
 
 func TestFilterNotEq(t *testing.T) {
@@ -151,7 +159,7 @@ func TestFilterIn(t *testing.T) {
 func TestLimit(t *testing.T) {
 	df := InitiateDummyDF()
 
-	limited := df.Limit(3)
+	limited := df.Limit(8)
 	limited.Show()
 }
 
