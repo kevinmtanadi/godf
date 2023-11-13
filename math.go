@@ -9,7 +9,13 @@ func standardize(x []interface{}) []float64 {
 	castedData := []float64{}
 
 	for _, v := range x {
-		casted := v.(float64)
+		var casted float64
+		switch w := v.(type) {
+		case float64:
+			casted = w
+		case int:
+			casted = float64(w)
+		}
 		castedData = append(castedData, casted)
 	}
 
@@ -38,7 +44,13 @@ func normalize(x []interface{}) []float64 {
 	castedData := []float64{}
 
 	for _, v := range x {
-		casted := v.(float64)
+		var casted float64
+		switch w := v.(type) {
+		case float64:
+			casted = w
+		case int:
+			casted = float64(w)
+		}
 		castedData = append(castedData, casted)
 	}
 

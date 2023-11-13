@@ -570,27 +570,3 @@ func (d *dataframe) Corr() {
 	}
 	corrDf.Show()
 }
-
-/*
-func (d *DataFrame) Correlation() DataFrame {
-	corrTable := [][]float64{}
-
-	length := len(d.Data[0])
-
-	for i := 0; i < length; i++ {
-		corrLine := make([]float64, length)
-		for j := 0; j < length; j++ {
-			corrLine[j] = formula.Correlation(d.GetCol(i).GetFloatData()[0], d.GetCol(j).GetFloatData()[0])
-		}
-		corrTable = append(corrTable, corrLine)
-	}
-
-	corrDf := DataFrame{}
-	corrDf.InsertFloat(corrTable)
-	corrDf.setHeader(d.Header)
-	corrDf.Show(true)
-
-	return corrDf
-}
-
-*/
