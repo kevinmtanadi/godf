@@ -37,6 +37,14 @@ func sortByColumn(data [][]interface{}, columnIndex int) [][]interface{} {
 		valueI := data[i][columnIndex]
 		valueJ := data[j][columnIndex]
 
+		if i, ok := valueI.(int); ok {
+			valueI = float64(i)
+		}
+
+		if j, ok := valueJ.(int); ok {
+			valueJ = float64(j)
+		}
+
 		// Assuming the column values are of type float64 for simplicity
 		return valueI.(float64) < valueJ.(float64)
 	})
