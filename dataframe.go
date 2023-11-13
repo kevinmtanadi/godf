@@ -33,7 +33,13 @@ func DataFrame(data map[string]interface{}, opts ...DataframeOption) *dataframe 
 	df := dataframe{}
 	headers := make([]string, 0)
 	var rows [][]interface{}
-	df.option = opts[0]
+	if len(opts) > 0 {
+		df.option = opts[0]
+	} else {
+		df.option = DataframeOption{
+			StringLimit: 50,
+		}
+	}
 
 	if df.option.StringLimit == 0 {
 		df.option.StringLimit = 50
