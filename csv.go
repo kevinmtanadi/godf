@@ -48,8 +48,12 @@ func parseCSV(reader *csv.Reader) *dataframe {
 		} else {
 			df.data = append(df.data, []interface{}{})
 			for _, s := range data {
-				castedData := castDataType(s)
-				df.data[line-1] = append(df.data[line-1], castedData)
+				if s != "" {
+					castedData := castDataType(s)
+					df.data[line-1] = append(df.data[line-1], castedData)
+				} else {
+					df.data[line-1] = append(df.data[line-1], nil)
+				}
 			}
 		}
 		line++

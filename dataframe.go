@@ -152,7 +152,9 @@ func (d *dataframe) Show() {
 			}
 			toBePrinted := row
 			for i, r := range toBePrinted {
-				if reflect.TypeOf(r).Kind() == reflect.String {
+				if r == nil {
+					toBePrinted[i] = nil
+				} else if reflect.TypeOf(r).Kind() == reflect.String {
 					toBePrinted[i] = limitString(r.(string), df.option.StringLimit)
 				}
 			}
@@ -444,18 +446,12 @@ func (d1 *dataframe) Merge(d2 *dataframe) *dataframe {
 	for i, h1 := range d1.headers {
 		for j, h2 := range d2.headers {
 			if h1 == h2 {
-				// for idx, data := range d2.data {
-				// 	d1.data[idx] = append(d1.data[idx], data...)
-				// }
+
 				d1.data[i] = append(d1.data[i], d2.data[j]...)
 				break
 			}
 		}
 	}
-
-	// for i, data := range d2.data {
-	// 	d1.data[i] = append(d1.data[i], data...)
-	// }
 
 	df.headers = d1.headers
 	df.data = d1.data
@@ -527,13 +523,9 @@ func (d *dataframe) Info() {
 }
 
 func (d *dataframe) Copy() *dataframe {
-	df := dataframe{}
+	df := d
 
-	df.headers = d.headers
-	df.data = d.data
-	df.option = d.option
-
-	return &df
+	return df
 }
 
 func (d *dataframe) SetOption(option DataframeOption) {

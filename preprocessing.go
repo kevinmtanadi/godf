@@ -10,7 +10,6 @@ type Preprocessing interface {
 	OneHotEncode()
 }
 
-// preprocessing is still not working, do not use.
 // if no headers are provided, all non string data will be standardized
 func (d *dataframe) Standardize(headers ...string) *dataframe {
 	df := d

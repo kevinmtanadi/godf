@@ -1,6 +1,9 @@
 package godf
 
-import "math"
+import (
+	"math"
+	"sort"
+)
 
 func standardize(x []interface{}) []float64 {
 
@@ -138,4 +141,14 @@ func correlation(x, y []float64) float64 {
 
 	corr := pembilang / math.Sqrt(pembagi1*pembagi2)
 	return corr
+}
+
+func median(x []float64) float64 {
+	sort.Sort(sort.Reverse(sort.Float64Slice(x)))
+	middle := len(x) / 2
+	if len(x)%2 == 1 {
+		return x[middle]
+	}
+
+	return (x[middle-1] + x[middle]) / 2
 }

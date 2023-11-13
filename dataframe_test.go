@@ -180,3 +180,40 @@ func TestCorr(t *testing.T) {
 
 	df.Corr()
 }
+
+func TestCopy(t *testing.T) {
+	df := InitiateDummyDF()
+
+	copy := df.Copy()
+
+	copy.DropCol("x")
+
+	df.Show()
+	copy.Show()
+}
+
+// func TestFillNA(t *testing.T) {
+// 	df := DataFrame(map[string]interface{}{
+// 		"x": []interface{}{3, 4, nil, 6},
+// 		"y": []interface{}{1, 2, 3, 4},
+// 	})
+
+// 	df.Show()
+
+// 	zero := df.Copy()
+// 	avg := df.Copy()
+// 	median := df.Copy()
+
+// 	fmt.Println("Fill with zero")
+// 	zero.FillNA(Zero)
+// 	zero.Show()
+
+// 	fmt.Println("Fill with average")
+// 	avg.FillNA(Average)
+// 	avg.Show()
+// 	fmt.Println(avg)
+
+// 	fmt.Println("Fill with median")
+// 	median.FillNA(Median)
+// 	median.Show()
+// }
