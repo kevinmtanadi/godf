@@ -1,38 +1,68 @@
 package main
 
-import "strconv"
+import (
+	"fmt"
+	"reflect"
+)
 
-func castInt(value interface{}) int {
-	return value.(int)
-}
-
-func castFloat64(value interface{}) float64 {
-	return value.(float64)
-}
-
-func castFloat32(value interface{}) float32 {
-	return float32(value.(float64))
-}
-
-func castBool(value interface{}) bool {
-	return value.(bool)
-}
-
-func autoCast(value interface{}) any {
-	if f, err := strconv.ParseFloat(value.(string), 64); err == nil {
-		return f
+func AutoCast(data interface{}) any {
+	switch reflect.ValueOf(data).Kind() {
+	case reflect.Float64:
+		return CastFloat64(data)
+	case reflect.Int:
+		return CastInt(data)
+	case reflect.String:
+		return CastString(data)
+	case reflect.Slice:
+		sliceType := reflect.TypeOf(data).Elem()
+		switch sliceType.Kind() {
+		case reflect.Float64:
+			return CastArrayFloat64(data)
+		case reflect.Int:
+			return CastArrayInt(data)
+		case reflect.String:
+			return CastArrayString(data)
+		default:
+			panic(fmt.Sprintf("Datatype %s not supported yet", sliceType.Kind()))
+		}
+	default:
+		panic(fmt.Sprintf("Datatype %s not supported yet", reflect.TypeOf(data).Kind()))
 	}
-	return value
 }
 
-func castString(data interface{}) string {
-	if i, ok := data.(int); ok {
-		return strconv.Itoa(i)
-	} else if f, ok := data.(float64); ok {
-		return strconv.FormatFloat(f, 'f', -1, 64)
-	} else if _, ok := data.(interface{}); ok {
-		return "b"
+func CastString(data interface{}) string {
+	return reflect.ValueOf(data).String()
+}
+
+func CastFloat64(data interface{}) float64 {
+	return reflect.ValueOf(data).Float()
+}
+
+func CastInt(data interface{}) int {
+	return int(reflect.ValueOf(data).Int())
+}
+
+func CastArrayFloat64(data interface{}) []float64 {
+	return reflect.ValueOf(data).Interface().([]float64)
+}
+
+func CastArrayString(data interface{}) []string {
+	return reflect.ValueOf(data).Interface().([]string)
+}
+
+func CastArrayInt(data interface{}) []int {
+	return reflect.ValueOf(data).Interface().([]int)
+}
+
+func CastHeaders(headers []string) []interface{} {
+	var intfHeaders []interface{}
+	for _, s := range headers {
+		intfHeaders = append(intfHeaders, interface{}(s))
 	}
 
-	return "a"
+	return intfHeaders
+}
+
+func GetDatatype(data interface{}) reflect.Kind {
+	return reflect.TypeOf(data).Kind()
 }
