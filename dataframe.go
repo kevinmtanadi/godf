@@ -1,10 +1,13 @@
-package main
+package godf
 
 import (
 	"fmt"
 	"os"
 	"reflect"
 	"strconv"
+	"strings"
+	"text/tabwriter"
+	"unsafe"
 
 	"github.com/jedib0t/go-pretty/v6/table"
 )
@@ -12,6 +15,11 @@ import (
 type dataframe struct {
 	headers []string
 	data    [][]interface{}
+	option  DataframeOption
+}
+
+type DataframeOption struct {
+	StringLimit int
 }
 
 // DataFrame initializes and returns a dataframe
@@ -21,10 +29,15 @@ type dataframe struct {
 // will be the contained data
 //
 //	Returns a pointer to the dataframe
-func DataFrame(data map[string]interface{}) *dataframe {
+func DataFrame(data map[string]interface{}, opts ...DataframeOption) *dataframe {
 	df := dataframe{}
 	headers := make([]string, 0)
 	var rows [][]interface{}
+	df.option = opts[0]
+
+	if df.option.StringLimit == 0 {
+		df.option.StringLimit = 50
+	}
 
 	maxRows := 0
 
@@ -66,7 +79,7 @@ func (d *dataframe) Transpose() *dataframe {
 		return nil
 	}
 
-	df := dataframe{}
+	df := d.Copy()
 
 	numRows, numCols := len(d.data), len(d.data[0])
 
@@ -80,8 +93,9 @@ func (d *dataframe) Transpose() *dataframe {
 
 	df.headers = d.headers
 	df.data = transposed
+	df.option = d.option
 
-	return &df
+	return df
 }
 
 // Shape returns the shape of the data in the dataframe
@@ -99,6 +113,10 @@ func (d *dataframe) Show() {
 	}
 	df := d.Transpose()
 
+	if df.option.StringLimit == 0 {
+		df.option.StringLimit = 50
+	}
+
 	t := table.NewWriter()
 	t.SetStyle(table.StyleLight)
 	t.SetOutputMirror(os.Stdout)
@@ -107,8 +125,60 @@ func (d *dataframe) Show() {
 
 	if df.data != nil {
 		for idx, row := range df.data {
+			toBePrinted := row
+			for i, r := range toBePrinted {
+				if reflect.TypeOf(r).Kind() == reflect.String {
+					toBePrinted[i] = limitString(r.(string), df.option.StringLimit)
+				}
+			}
 			indexedRow := append([]interface{}{idx + 1}, row...)
 			t.AppendRow(table.Row(indexedRow))
+		}
+	}
+
+	t.Render()
+}
+
+// Head renders the dataframe up to n rows, if no
+// length given, it will render 10 rows
+//
+//	Example of usage:
+//	df.Head(5)
+func (d *dataframe) Head(n ...int) {
+	if d.data == nil {
+		fmt.Println("dataframe is empty")
+		return
+	}
+
+	var length int = 10
+	if len(n) > 0 {
+		length = n[0]
+	}
+
+	df := d.Transpose()
+	if df.option.StringLimit == 0 {
+		df.option.StringLimit = 50
+	}
+
+	t := table.NewWriter()
+	t.SetStyle(table.StyleLight)
+	t.SetOutputMirror(os.Stdout)
+	indexedHeader := append([]interface{}{"#"}, CastHeaders(d.headers)...)
+	t.AppendHeader(table.Row(indexedHeader))
+
+	if df.data != nil {
+		for idx, row := range df.data {
+			toBePrinted := row
+			for i, r := range toBePrinted {
+				if reflect.TypeOf(r).Kind() == reflect.String {
+					toBePrinted[i] = limitString(r.(string), df.option.StringLimit)
+				}
+			}
+			indexedRow := append([]interface{}{idx + 1}, row...)
+			t.AppendRow(table.Row(indexedRow))
+			if idx+1 == length {
+				break
+			}
 		}
 	}
 
@@ -405,6 +475,39 @@ func (d *dataframe) Limit(n int) *dataframe {
 			df.data[j] = append(df.data[j], d[0])
 		}
 	}
+
+	return &df
+}
+
+// Info print details of the dataframe
+func (d *dataframe) Info() {
+	w := tabwriter.NewWriter(os.Stdout, 1, 1, 3, ' ', 0)
+	headers := []string{"#", "Column", "Dtype"}
+	fmt.Fprintf(w, "%s\n", strings.Join(headers, "\t"))
+	fmt.Fprintf(w, "---\t------\t-----\n")
+
+	for i, h := range d.headers {
+		fmt.Fprintf(w, "%d\t%s\t%s\n", i, h, reflect.TypeOf(d.data[i][0]).Kind())
+	}
+
+	memUsage := int(unsafe.Sizeof(d.headers))
+	memUsage += calculateSliceSize(reflect.ValueOf(d.headers))
+
+	for _, col := range d.data {
+		memUsage += calculateSliceSize(reflect.ValueOf(col))
+	}
+
+	fmt.Fprintf(w, "memory usage: %s\n", convertSize(memUsage))
+
+	w.Flush()
+}
+
+func (d *dataframe) Copy() *dataframe {
+	df := dataframe{}
+
+	df.headers = d.headers
+	df.data = d.data
+	df.option = d.option
 
 	return &df
 }

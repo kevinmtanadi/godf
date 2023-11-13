@@ -1,4 +1,4 @@
-package main
+package godf
 
 import (
 	"encoding/csv"
