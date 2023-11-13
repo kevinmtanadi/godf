@@ -113,7 +113,7 @@ func (d *dataframe) Shape() (row int, col int) {
 
 // Show renders the dataframe
 func (d *dataframe) Show() {
-	if d.data == nil {
+	if d == nil || d.data == nil || d.headers == nil {
 		fmt.Println("dataframe is empty")
 		return
 	}
@@ -151,7 +151,7 @@ func (d *dataframe) Show() {
 //	Example of usage:
 //	df.Head(5)
 func (d *dataframe) Head(n ...int) {
-	if d.data == nil {
+	if d == nil || d.data == nil || d.headers == nil {
 		fmt.Println("dataframe is empty")
 		return
 	}
@@ -270,13 +270,10 @@ func (d *dataframe) DropCol(headers ...interface{}) {
 
 		newData := [][]interface{}{}
 		for idx, col := range d.data {
-			newCol := make([]interface{}, len(col))
 			if idx != colNum {
-				newCol = col
+				newData = append(newData, col)
 			}
-			newData = append(newData, newCol)
 		}
-
 		d.data = newData
 	}
 
@@ -326,7 +323,10 @@ func (d *dataframe) DropRow(idx ...int) {
 }
 
 // ExtractData returns the raw data as [][]interface{}
-func (d *dataframe) ExtractData() [][]interface{} {
+func (d *dataframe) ExtractData() interface{} {
+	if len(d.data) == 1 {
+		return d.data[0]
+	}
 	return d.data
 }
 
@@ -422,9 +422,14 @@ func (d1 *dataframe) Merge(d2 *dataframe) *dataframe {
 		panic(fmt.Sprintf("data length do not match {%d | %d}", len(d1.headers), len(d2.headers)))
 	}
 
-	for i := range d1.headers {
-		if d1.headers[i] != d2.headers[i] {
-			panic(fmt.Sprintf("headers do not match {%s | %s}", d1.headers[i], d2.headers[i]))
+	for _, h1 := range d1.headers {
+		for _, h2 := range d2.headers {
+			if h1 == h2 {
+				for idx, data := range d2.data {
+					d1.data[idx] = append(d1.data[idx], data...)
+				}
+				break
+			}
 		}
 	}
 
@@ -445,8 +450,8 @@ func (d1 *dataframe) Merge(d2 *dataframe) *dataframe {
 func (d1 *dataframe) Join(d2 *dataframe) *dataframe {
 	df := dataframe{}
 
-	d1Row, _ := d1.Shape()
-	d2Row, _ := d2.Shape()
+	_, d1Row := d1.Shape()
+	_, d2Row := d2.Shape()
 
 	if d1Row != d2Row {
 		panic(fmt.Sprintf("data length do not match {%d | %d}", d1Row, d2Row))
@@ -476,7 +481,7 @@ func (d *dataframe) Limit(n int) *dataframe {
 			break
 		}
 
-		row := d.GetRow(i + 1).ExtractData()
+		row := d.GetRow(i + 1).ExtractData().([][]interface{})
 		for j, d := range row {
 			df.data[j] = append(df.data[j], d[0])
 		}
@@ -516,4 +521,11 @@ func (d *dataframe) Copy() *dataframe {
 	df.option = d.option
 
 	return &df
+}
+
+func (d *dataframe) SetOption(option DataframeOption) {
+	if d == nil {
+		return
+	}
+	d.option = option
 }

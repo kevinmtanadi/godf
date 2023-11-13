@@ -3,6 +3,7 @@ package godf
 import (
 	"fmt"
 	"math"
+	"net/url"
 	"reflect"
 	"unicode/utf8"
 )
@@ -38,4 +39,9 @@ func limitString(s string, n int) string {
 	// Take only the first 'n' runes from the string
 	runes := []rune(s)
 	return string(runes[:n]) + "..."
+}
+
+func isURL(str string) bool {
+	u, err := url.Parse(str)
+	return err == nil && u.Scheme != "" && u.Host != ""
 }

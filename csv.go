@@ -3,22 +3,40 @@ package godf
 import (
 	"encoding/csv"
 	"fmt"
+	"net/http"
 	"os"
 	"strconv"
 )
 
+// Read CSV and parse it into a dataframe
+//
+//	Support reading from local file or URL
 func ReadCSV(filename string) *dataframe {
-	df := dataframe{}
 
-	file, err := os.Open(filename)
+	if !isURL(filename) {
+		file, err := os.Open(filename)
+		if err != nil {
+			panic(err)
+		}
+		defer file.Close()
+
+		reader := csv.NewReader(file)
+		return parseCSV(reader)
+	}
+
+	resp, err := http.Get(filename)
 	if err != nil {
 		panic(err)
 	}
-	defer file.Close()
+	defer resp.Body.Close()
 
-	reader := csv.NewReader(file)
+	reader := csv.NewReader(resp.Body)
+	return parseCSV(reader)
+}
 
+func parseCSV(reader *csv.Reader) *dataframe {
 	line := 0
+	df := dataframe{}
 	for {
 		data, err := reader.Read()
 		if err != nil {
@@ -53,8 +71,9 @@ func castDataType(s string) interface{} {
 	return s
 }
 
-func (d *dataframe) WriteCSV(path string) {
-	file, err := os.Create(path)
+// WriteCSV writes the dataframe to a CSV file
+func (d *dataframe) WriteCSV(outputPath string) {
+	file, err := os.Create(outputPath)
 	if err != nil {
 		panic(err)
 	}
@@ -77,5 +96,5 @@ func (d *dataframe) WriteCSV(path string) {
 		}
 	}
 
-	fmt.Println("Generated CSV file: ", path)
+	fmt.Println("Generated CSV file: ", outputPath)
 }
