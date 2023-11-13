@@ -4,6 +4,7 @@ import (
 	"encoding/csv"
 	"fmt"
 	"os"
+	"strconv"
 )
 
 func ReadCSV(filename string) *dataframe {
@@ -29,7 +30,7 @@ func ReadCSV(filename string) *dataframe {
 		} else {
 			df.data = append(df.data, []interface{}{})
 			for _, s := range data {
-				castedData := AutoCast(s)
+				castedData := castDataType(s)
 				df.data[line-1] = append(df.data[line-1], castedData)
 			}
 		}
@@ -38,6 +39,18 @@ func ReadCSV(filename string) *dataframe {
 
 	df = *df.Transpose()
 	return &df
+}
+
+func castDataType(s string) interface{} {
+	if i, err := strconv.Atoi(s); err == nil {
+		return i
+	}
+
+	if f, err := strconv.ParseFloat(s, 64); err == nil {
+		return f
+	}
+
+	return s
 }
 
 func (d *dataframe) WriteCSV(path string) {
