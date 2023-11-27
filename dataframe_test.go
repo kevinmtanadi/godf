@@ -31,6 +31,8 @@ func TestReadCSV(t *testing.T) {
 
 	df.Head()
 
+	df.WriteCSV("./test_data/test_write.csv")
+
 	dfLocal := ReadCSV("test_data/news.csv")
 	dfLocal.OneHotEncode("label")
 	dfLocal.Head()

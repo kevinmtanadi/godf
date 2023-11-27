@@ -86,14 +86,14 @@ func (d *dataframe) WriteCSV(outputPath string) {
 	writer := csv.NewWriter(file)
 	defer writer.Flush()
 
-	df := d.Transpose()
+	// df := d.Transpose()
 
-	err = writer.Write(df.headers)
+	err = writer.Write(d.headers)
 	if err != nil {
 		panic(err)
 	}
 
-	for _, row := range df.data {
+	for _, row := range d.data {
 		err := writer.Write(stringify(row))
 		if err != nil {
 			panic(err)
